@@ -1,18 +1,14 @@
-const NodeCache = require( "node-cache" );
+const myCache = require('../cache');
 
-const myCache = new NodeCache();
-const ttl = 3600; //1hour
 
-//singleton cache class
-class Cache {
-
-    saveToCache = async (key, dataToSave) => {
-        console.log("saving to cache... ");
-        //saving to cache by key
-        let placesToSave = [];
+    const saveToCache = async (key, dataToSave) => {
+        //saving to cache by key        
         switch (key) {
             case "places":
                 try {
+                    let placesToSave = [];
+                    const tags = dataToSave.tags;
+
                     //case key "places" saving all places with given key            
                     dataToSave.data.forEach(place => {
                         placesToSave.push({
@@ -22,26 +18,28 @@ class Cache {
                             opening_hours: place.opening_hours   
                         })
                     });
-                    myCache.set(key, placesToSave, ttl);
+                    myCache.set(key, placesToSave);
 
                     //saving places to cache by tags for faster fetching 
-                    const tags = dataToSave.tags;
+                    
                     let tagsWithData = [];
 
-                    Object.values(tags).forEach(tag => {
+                    Object.keys(tags).forEach(tag => {
                         const placesWithGivenTag = [];
                         placesToSave.forEach(place => {
                             place.tags.forEach(placeTag => {
-                                if(placeTag.name == tag) placesWithGivenTag.push(place);
+                                if(placeTag.id == tag) placesWithGivenTag.push(place);
                             })
                         })
                         if(placesWithGivenTag.length != 0){
-                            myCache.set(tag, placesWithGivenTag, ttl);
-                            tagsWithData.push(tag);  
+                            myCache.set(tag, placesWithGivenTag);
+                            let tagObject = new Object;
+                            tagObject[tag] = tags[tag];
+                            tagsWithData.push(tagObject);  
                         } 
                     });
-
-                    myCache.set("tagsWithData", tagsWithData, ttl);
+                    
+                    myCache.set("tagsWithData", tagsWithData);
 
                 } catch (error) {
                     throw new Error("Saving to cache failed! " + error);
@@ -54,11 +52,11 @@ class Cache {
         }
     }
  
-    cacheExists = async (key) => {
+    const cacheExists = async (key) => {
         return myCache.get(key) == undefined ? false : true
     }
 
-    getCachedDataByTag = async (tag) => {
+    const getCachedDataByTag = async (tag) => {
         try {
             return await myCache.get(tag);
         } catch (error) {
@@ -67,7 +65,7 @@ class Cache {
         
     }
 
-    getTagsWithData = async () => {
+    const getTagsWithData = async () => {
         try {
             return await myCache.get("tagsWithData");
         } catch (error) {
@@ -75,6 +73,4 @@ class Cache {
         }
     }
 
-} 
-
- module.exports = new Cache();
+ module.exports = {saveToCache, cacheExists, getCachedDataByTag, getTagsWithData}

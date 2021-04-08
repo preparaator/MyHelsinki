@@ -3,17 +3,16 @@ router = express.Router(),
 service = require('../services/placesService');
 
 
-router.get('/get', async (req, res) => {
+router.get('/', async (req, res) => {
 
     //extracting query strings and setting default if missing
-    const pageNr = req.query.page == undefined ? 1 : req.query.page;
-    const itemsPerPage = req.query.items == undefined ? 10 : req.query.items;
-    const queryTag = req.query.tag == undefined ? "places" : req.query.tag;
-
+    const pageNr = (req.query.page == undefined || req.query.page == "undefined" || req.query.page.trim == "" ) ? 1 : req.query.page;
+    const pageSize = (req.query.pageSize == undefined || req.query.pageSize == "undefined" || req.query.pageSize.trim == ""  ) ? 10 : req.query.pageSize;
+    const queryTag = (req.query.tag === undefined || req.query.tag == "undefined" || req.query.tag.trim == "" )  ? "places" : req.query.tag;
+    
     try {
-
-        const places = await service.getPlacesPageData(pageNr, itemsPerPage, queryTag); 
-        res.send(places);
+        const places = await service.getPlacesPageData(pageNr, pageSize, queryTag); 
+        res.send(JSON.stringify(places));
 
     } catch (error) {
 

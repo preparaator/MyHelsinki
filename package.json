@@ -1,0 +1,11 @@
+{
+  "devDependencies": {
+    "concurrently": "^6.0.1"
+  },
+  "scripts": {
+    "client": "cd client && npm start",
+    "server": "cd server && nodemon server.js",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
+    },
+    "proxy": "http://localhost:3001"
+}
